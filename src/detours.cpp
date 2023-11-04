@@ -209,15 +209,38 @@ void FASTCALL Detour_UTIL_SayText2Filter(
 	const char *param3,
 	const char *param4)
 {
-#ifdef _DEBUG
-    CPlayerSlot slot = filter.GetRecipientIndex(0);
-	CCSPlayerController* target = CCSPlayerController::FromSlot(slot);
+	int entindex = filter.GetRecipientIndex(0).Get() + 1;
+	CCSPlayerController *target = (CCSPlayerController *)g_pEntitySystem->GetBaseEntity((CEntityIndex)entindex);
 
-	if (target)
-		Message("Chat from %s to %s: %s\n", param1, target->GetPlayerName(), param2);
-#endif
+ 	int iCommandPlayer = pEntity->GetPlayerSlot();
+   	ZEPlayer *pPlayer = g_playerManager->GetPlayer(iCommandPlayer);
+	char sBuffer[256];
+	
+        if (pPlayer->IsAdminFlagSet(ADMFLAG_ROOT)) // z
+        {
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\13OWNER\1] \10%s: \4%s", param1, param2);
+        }
+        else if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM6)) // t
+        {
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\14CO-OWNER\1] \10%s: \4%s", param1, param2);
+        }
+        else if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM2)) // p
+        {
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\4ADMINISTRATOR\1]\10 %s: \4%s", param1, param2);	
+        }
+        else if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM3)) // q
+        {
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\2MODERATOR\1]\14 %s: \4%s", param1, param2);	
+        }
+        else if ( pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM1)) //o
+        {
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\2HELPER\1]\14 %s: \2%s", param1, param2);
+        }
+        else {
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\4Player\1]\1 %s: \1%s", param1, param2);
+        }
 
-	UTIL_SayText2Filter(filter, pEntity, eMessageType, msg_name, param1, param2, param3, param4);
+    UTIL_SayTextFilter(filter, sBuffer, pEntity, eMessageType);
 }
 
 void FASTCALL Detour_Host_Say(CCSPlayerController *pController, CCommand &args, bool teamonly, int unk1, const char *unk2)
@@ -225,12 +248,13 @@ void FASTCALL Detour_Host_Say(CCSPlayerController *pController, CCommand &args, 
 	bool bGagged = pController && pController->GetZEPlayer()->IsGagged();
 
 
- if (*args[1] == '@' && teamonly)
+ /********************************************ADMINS CHAT**********************************************/	
+    if (*args[1] == '@' && teamonly)
     {
         const char* sFormat = args[1];
         if (sFormat[1] == '\0')
         {
-            ClientPrint(pController, HUD_PRINTTALK, CHAT_PREFIX"Usage: @ <message>");
+            ClientPrint(pController, HUD_PRINTTALK, CHAT_PREFIX "Usage: @ <message>");
             return;
         }
 
@@ -242,15 +266,12 @@ void FASTCALL Detour_Host_Say(CCSPlayerController *pController, CCommand &args, 
             for (int i = 0; i < gpGlobals->maxClients; i++)
             {
                 ZEPlayer* pPlayer = g_playerManager->GetPlayer(i);
-                CCSPlayerController* cPlayer = CCSPlayerController::FromSlot(i);
+                CBasePlayerController* cPlayer = (CBasePlayerController*)g_pEntitySystem->GetBaseEntity((CEntityIndex)(i + 1));
 
                 if (!cPlayer || !pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsAdminFlagSet(ADMFLAG_SLAY))
                     continue;
 
-                //ClientPrint(cPlayer, HUD_PRINTTALK, "(\2Admin\1) \2%s\1: \2%s\1", pController->GetPlayerName(), sFormat);
-				ClientPrint(cPlayer, HUD_PRINTTALK," \3*************\14Admins Chat\3*************");
-        		ClientPrint(cPlayer, HUD_PRINTTALK, "(\2Admin\1) \2%s\1: \2%s\1", pController->GetPlayerName(), sFormat);
-      			ClientPrint(cPlayer, HUD_PRINTTALK, " \3**************************************");
+                ClientPrint(cPlayer, HUD_PRINTTALK, " \7(ADMINS)\4 %s: \7%s ",pController->GetPlayerName(), sFormat );
             }
             return;
         }
@@ -258,18 +279,19 @@ void FASTCALL Detour_Host_Say(CCSPlayerController *pController, CCommand &args, 
         for (int i = 0; i < gpGlobals->maxClients; i++)
         {
             ZEPlayer* pPlayer = g_playerManager->GetPlayer(i);
-            CCSPlayerController* cPlayer = CCSPlayerController::FromSlot(i);
+            CBasePlayerController* cPlayer = (CBasePlayerController*)g_pEntitySystem->GetBaseEntity((CEntityIndex)(i + 1));
 
             if (!cPlayer || !pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsAdminFlagSet(ADMFLAG_SLAY))
                 continue;
 
-            ClientPrint(cPlayer, HUD_PRINTTALK, "(\2REPORT\1) \2%s\1: \2%s\1", pController->GetPlayerName(), sFormat);
+            ClientPrint(cPlayer, HUD_PRINTTALK, " \7(TO ADMINS) \3%s: \4%s ",pController->GetPlayerName(), sFormat );
         }
-
-        ClientPrint(pController, HUD_PRINTTALK, "(\2REPORT\1) \2%s\1: \2%s\1", pController->GetPlayerName(), sFormat);
-
+		
+	ClientPrint(pController, HUD_PRINTTALK, " \7(TO ADMINS) \3%s: \4%s ",pController->GetPlayerName(), sFormat );
+		
         return;
     }
+    /********************************************ADMINS CHAT END**********************************************/
 
 	if (!bGagged && *args[1] != '/')
 	{
