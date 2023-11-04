@@ -64,34 +64,6 @@ void UnregisterEventListeners()
 	g_vecEventListeners.Purge();
 }
 
-int g_iBombTimerCounter = 0;
-
-GAME_EVENT_F(bomb_planted)
-{
-    ConVar* cvar = g_pCVar->GetConVar(g_pCVar->FindConVar("mp_c4timer"));
-
-    int iC4;
-    memcpy(&iC4, &cvar->values, sizeof(iC4));
-
-    g_iBombTimerCounter = iC4;
-
-    new CTimer(1.0f, false, []()
-    {
-        if (g_iBombTimerCounter <= 0)
-            return -1.0f;
-
-        g_iBombTimerCounter--;
-
-        ClientPrintAll(HUD_PRINTCENTER, "C4: %d", g_iBombTimerCounter);
-        return 1.0f;
-    });
-}
-
-GAME_EVENT_F(bomb_defused)
-{
-    g_iBombTimerCounter = 0;
-}
-
 // CONVAR_TODO
 bool g_bForceCT = false; //edited from true
 
@@ -143,7 +115,7 @@ GAME_EVENT_F(player_spawn)
 
 	if (!pController)
 		return;
-		//*******************************Medic****************************
+//*******************************Medic****************************
 	int iPlayer = pController->GetPlayerSlot();
 		ZEPlayer* pZEPlayer = g_playerManager->GetPlayer(iPlayer);
 
@@ -152,7 +124,7 @@ GAME_EVENT_F(player_spawn)
 			pZEPlayer->SetUsedMedkit(false);
 		}
 //*******************************Medic****************************
-
+		CBasePlayerPawn *pPawn = pController->GetPawn();
 	CHandle<CCSPlayerController> hController = pController->GetHandle();
 
 	// Gotta do this on the next frame...
@@ -162,6 +134,30 @@ GAME_EVENT_F(player_spawn)
 
 		if (!pController || !pController->m_bPawnIsAlive())
 			return -1.0f;
+			
+		int iPlayer = pController->GetPlayerSlot();					
+		ZEPlayer* pZEPlayer = g_playerManager->GetPlayer(iPlayer);
+		//clan tag
+		if (pZEPlayer->IsAdminFlagSet(ADMFLAG_ROOT))				
+        	{
+            		pController->m_szClan("[OWNER]");     				
+        	} 
+		else if (pZEPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM6))				
+        	{
+            		pController->m_szClan("[CO-OWNER]");     				
+        	} 
+		else if (pZEPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM2))				
+        	{
+            		pController->m_szClan("[ADMIN]");     				
+        	} 
+		else if (pZEPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM3))				
+        	{
+            		pController->m_szClan("[MOD]");     				
+        	} 
+		else if (pZEPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM1))				
+        	{
+            		pController->m_szClan("[HELPER]");     				
+        	} 		
 
 		CBasePlayerPawn *pPawn = pController->GetPawn();
 
@@ -194,6 +190,8 @@ GAME_EVENT_F(player_hurt)
 	pPlayer->SetTotalDamage(pPlayer->GetTotalDamage() + pEvent->GetInt("dmg_health"));
 }
 
+int g_iBombTimerCounter = 0;
+
 GAME_EVENT_F(round_start)
 {
 	for (int i = 0; i < gpGlobals->maxClients; i++)
@@ -205,47 +203,37 @@ GAME_EVENT_F(round_start)
 
 		pPlayer->SetTotalDamage(0);
 	}
+	
 	g_iBombTimerCounter = 0;
+}
+
+GAME_EVENT_F(bomb_planted)
+{
+    ConVar* cvar = g_pCVar->GetConVar(g_pCVar->FindConVar("mp_c4timer"));
+
+    int iC4;
+    memcpy(&iC4, &cvar->values, sizeof(iC4));
+
+    g_iBombTimerCounter = iC4;
+
+    new CTimer(1.0f, false, []()
+    {
+        if (g_iBombTimerCounter <= 0)
+            return -1.0f;
+
+        g_iBombTimerCounter--;
+
+        ClientPrintAll(HUD_PRINTCENTER, "C4: %d", g_iBombTimerCounter);
+        return 1.0f;
+    });
+}
+
+GAME_EVENT_F(bomb_defused)
+{
+    g_iBombTimerCounter = 0;
 }
 
 GAME_EVENT_F(round_end)
 {
-	CUtlVector<ZEPlayer*> sortedPlayers;
-
-	for (int i = 0; i < gpGlobals->maxClients; i++)
-	{
-		ZEPlayer* pPlayer = g_playerManager->GetPlayer(i);
-
-		if (!pPlayer || pPlayer->GetTotalDamage() == 0)
-			continue;
-
-		CCSPlayerController* pController = CCSPlayerController::FromSlot(pPlayer->GetPlayerSlot());
-
-		if(!pController)
-			continue;
-
-		sortedPlayers.AddToTail(pPlayer);
-	}
-
-	if (sortedPlayers.Count() == 0)
-		return;
-
-	sortedPlayers.Sort([](ZEPlayer *const *a, ZEPlayer *const *b) -> int
-	{
-		return (*a)->GetTotalDamage() < (*b)->GetTotalDamage();
-	});
-
-	ClientPrintAll(HUD_PRINTTALK, " \x09TOP DEFENDERS");
-
-	char colorMap[] = { '\x10', '\x08', '\x09', '\x0B'};
-
-	for (int i = 0; i < MIN(sortedPlayers.Count(), 5); i++)
-	{
-		ZEPlayer* pPlayer = sortedPlayers[i];
-		CCSPlayerController* pController = CCSPlayerController::FromSlot(pPlayer->GetPlayerSlot());
-
-		ClientPrintAll(HUD_PRINTTALK, " %c%i. %s \x01- \x07%i DMG", colorMap[MIN(i, 3)], i + 1, pController->GetPlayerName(), pPlayer->GetTotalDamage());
-		pPlayer->SetTotalDamage(0);
-	}
-	g_iBombTimerCounter = 0;
+    g_iBombTimerCounter = 0;
 }
