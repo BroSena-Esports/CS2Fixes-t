@@ -589,7 +589,7 @@ const char *CS2Fixes::GetLicense()
 
 const char *CS2Fixes::GetVersion()
 {
-	return "2.0.4";
+	return "1.4";
 }
 
 const char *CS2Fixes::GetDate()
@@ -604,7 +604,7 @@ const char *CS2Fixes::GetLogTag()
 
 const char *CS2Fixes::GetAuthor()
 {
-	return "xen & poggu modified and compiled by GSM-RO";
+	return "xen & poggu modified and compiled by panda.@GOLLG";
 }
 
 const char *CS2Fixes::GetDescription()
