@@ -216,26 +216,25 @@ void FASTCALL Detour_UTIL_SayText2Filter(
    	ZEPlayer *pPlayer = g_playerManager->GetPlayer(iCommandPlayer);
 	char sBuffer[256];
 	
-        if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM1)) // o
+        if (pPlayer->IsAdminFlagSet(ADMFLAG_ROOT)) // z
         {
-            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\13HELPER\1] \10%s: \4%s", param1, param2);
-	    //addresses::SetClanTag(pPlayer,"[HELPER]");	
-        }
-        else if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM2)) // p
-        {
-            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\14ADMINISTRATOR\1] \10%s: \4%s", param1, param2);
-        }
-        else if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM3)) // q
-        {
-            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\4MODERATOR\1]\10 %s: \4%s", param1, param2);	
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\13OWNER\1] \10%s: \4%s", param1, param2);
         }
         else if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM6)) // t
         {
-            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\2CO-OWNER\1]\14 %s: \4%s", param1, param2);	
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\14CO-OWNER\1] \10%s: \4%s", param1, param2);
         }
-        else if ( pPlayer->IsAdminFlagSet(ADMFLAG_CHEATS) && pPlayer->IsAdminFlagSet(ADMFLAG_RCON))
+        else if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM2)) // p
         {
-            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\2OWNER\1]\14 %s: \2%s", param1, param2);
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\4ADMINISTRATOR\1]\10 %s: \4%s", param1, param2);	
+        }
+        else if (pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM3)) // q
+        {
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\2MODERATOR\1]\14 %s: \4%s", param1, param2);	
+        }
+        else if ( pPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM1)) //o
+        {
+            V_snprintf(sBuffer, sizeof(sBuffer), " \1[\2HELPER\1]\14 %s: \2%s", param1, param2);
         }
         else {
             V_snprintf(sBuffer, sizeof(sBuffer), " \1[\4Player\1]\1 %s: \1%s", param1, param2);
