@@ -152,12 +152,8 @@ GAME_EVENT_F(player_spawn)
         } else if (pZEPlayer->IsAdminFlagSet(ADMFLAG_CUSTOM4)) // t)				//
         {
             pController->m_szClan("[Helper]");     				//
-        } else if (pZEPlayer->IsAdminFlagSet(ADMFLAG_RESERVATION)) // t)				//
-        {
-            pController->m_szClan("[ VIP ]");     				//
-        }
-		 else { 
-			pController->m_szClan("[BroSena]");     				//
+        } else { 
+			pController->m_szClan("[Player]");     				//
 			   }
 		return -1.0f;
 	});
