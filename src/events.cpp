@@ -158,7 +158,10 @@ GAME_EVENT_F(player_spawn)
         	{
             		pController->m_szClan("[HELPER]");     				
         	} 		
-
+		else if (pZEPlayer->IsAdminFlagSet(ADMFLAG_RESERVATION))				
+        	{
+            		pController->m_szClan("[ VIP ]");     				
+        	} 
 		CBasePlayerPawn *pPawn = pController->GetPawn();
 
 		// Just in case somehow there's health but the player is, say, an observer
